@@ -1,7 +1,7 @@
 import numpy as np
 import simulation
 import matplotlib.pyplot as plt
-import math
+import math, random	
 
 
 
@@ -87,8 +87,11 @@ def kalmanFilter(T=1, variance_w=.3, variance_v=1000, epsilon=.00001, initialSta
 		assert(z[k].shape == (2,1))
 
 		##implement imperfect sensor here
-
-		xhat[k] = xhatminus[k] + K[k]*(z[k]-C*xhatminus[k])
+		if random.random() > sensorProbability and k > 1:
+			# sensor broke, carry forward old data to make projections
+			xhat[k] = xhatminus[k-1] + K[k-1]*(z[k-1]-C*xhatminus[k-1])
+		else:
+			xhat[k] = xhatminus[k] + K[k]*(z[k]-C*xhatminus[k])
 
 		assert(xhat[k].shape == (4,1))
 
@@ -117,7 +120,7 @@ def kalmanFilter(T=1, variance_w=.3, variance_v=1000, epsilon=.00001, initialSta
 		# print(truth)
 		# print(estimate)
 
-		return math.sqrt((xEstimate - xTrue)**2 + (yEstimate - yTrue)**2)
+		return [math.sqrt((xEstimate - xTrue)**2 + (yEstimate - yTrue)**2), (xEstimate - xTrue), (yEstimate - yTrue)]
 
 	def computeMeasurementError(truth, measurement):
 		assert(truth.shape == (4,1))
@@ -128,45 +131,92 @@ def kalmanFilter(T=1, variance_w=.3, variance_v=1000, epsilon=.00001, initialSta
 		xMeasurement = measurement[0,0]
 		yMeasurement = measurement[1,0]
 
-		return math.sqrt((xMeasurement - xTrue)**2 + (yMeasurement - yTrue)**2)
+		return [math.sqrt((xMeasurement - xTrue)**2 + (yMeasurement - yTrue)**2), (xMeasurement - xTrue) , (yMeasurement - yTrue)]
 
 	estimationError = np.array([computeEstimationError(trueTrajectoryMatrix[i].T, xhat[i]) for i in range(len(xhat))])
+	estimationErrorXY = estimationError[:,0]
+	estimationErrorX = estimationError[:,1]
+	estimationErrorY = estimationError[:,2]
+
 	measurementError = np.array([computeMeasurementError(trueTrajectoryMatrix[i].T, z[i]) for i in range(len(xhat))])
+	measurementErrorXY = measurementError[:,0]
+	measurementErrorX = measurementError[:,1]
+	measurementErrorY = measurementError[:,2]
+
 
 	if(graph):
 		plt.figure()
 		plt.plot(trueTrajectoryArray[:,0], trueTrajectoryArray[:,2])
 		plt.plot(rawMeasurementsArray[:,0], rawMeasurementsArray[:,1])
 		plt.plot(xhat_a[:,0], xhat_a[:,2])
+		plt.xlabel("x position")
+		plt.ylabel("y position")
+		plt.title("Estimated Trajectory (red), Raw Measurements (green), True Trajectory (blue) on xy-plane")
+		plt.savefig("2a_Estimated_Raw_True_Trajectories.png")
 
 
 		plt.figure()
-
 		plt.plot(list(range(len(estimationError))), np.zeros(len(estimationError)))
-		plt.plot(list(range(len(estimationError))), estimationError)
-		plt.plot(list(range(len(measurementError))), measurementError)
+		plt.plot(list(range(len(estimationError))), estimationErrorXY, color = 'green')
+		plt.plot(list(range(len(measurementError))), measurementErrorXY, color = 'red')
+		plt.xlabel("Time (sec)")
+		plt.ylabel("Euclidean Distance / Error (m)")
+		plt.title("Estimation (green) and Measurement error (red) vs. Time (sec)")
+		plt.savefig("2a_Estimation_Measurement_error.png")
 
-		# plt.figure()
-		# plt.plot(list(range(len(groundTruthData))), groundTruthData[:,1])
-		# plt.plot(list(range(len(groundTruthData))),  noisyMeasurement[:,1])
 
-		# plt.figure()
-		# plt.plot(list(range(len(groundTruthData))), groundTruthData[:,3])
-		# plt.plot(list(range(len(groundTruthData))),  noisyMeasurement[:,3])
+		plt.figure()
+		plt.plot(list(range(len(trueTrajectoryArray))), trueTrajectoryArray[:,1])
+		plt.plot(list(range(len(trueTrajectoryArray))),  estimationErrorX)
+		plt.plot(list(range(len(trueTrajectoryArray))),  measurementErrorX)
+		plt.xlabel("Time (sec)")
+		plt.ylabel("meters")
+		plt.title("Velocity on x (blue) with Estimation (green) and Measurement Error (red) vs. Time (sec)")
+		plt.savefig("2a_velocity_along_x_est_err.png")
 
-		plt.show()
 
-	return estimationError.sum() / measurementError.sum()
+		plt.figure()
+		plt.plot(list(range(len(trueTrajectoryArray))), trueTrajectoryArray[:,3])
+		plt.plot(list(range(len(trueTrajectoryArray))),  estimationErrorY)
+		plt.plot(list(range(len(trueTrajectoryArray))),  measurementErrorY)
+		plt.xlabel("Time (sec)")
+		plt.ylabel("meters")
+		plt.title("Velocity on y (blue) with Estimation (green) and Measurement Error (red) vs. Time (sec)")
+		plt.savefig("2a_velocity_along_y_est_err.png")
+
+		# plt.show()
+
+	return estimationErrorXY.sum() / measurementErrorXY.sum()
+
+
+
 
 if __name__ == "__main__":
-	errorRatio = kalmanFilter()
-	print(errorRatio)
-	variance_w_list=[.003, .03, .3, 3, 30, 300]
-	for variance in variance_w_list:
-		errorRatio = kalmanFilter(variance_w=variance, graph=False)
-		print('For variance_w {} the error ratio is {}'.format(variance, errorRatio))
+	# errorRatio = kalmanFilter()
+	# print(errorRatio)
 
-	errorRatio = kalmanFilter(variance_w=3)
+	# 2b) try some variance_w to see the effects 
+	# variance_w_list=[.003, .03, .3, 3, 30, 300]
+	# for variance in variance_w_list:
+	# 	errorRatio = kalmanFilter(variance_w=variance, graph=False)
+	# 	print('For variance_w {} the error ratio is {}'.format(variance, errorRatio))
+
+	# errorRatio = kalmanFilter(variance_w=3000)
+
+	# 2c) try a very small variance_v
+	# this made the model to assume a smaller variance_v 
+	# errorRatio = kalmanFilter(variance_v = 1)
+
+	# 2d) try variance_v = 1, variance_w = 1, initialState = [0, -100, 0, -100]
+	# errorRatio = kalmanFilter(variance_v = 1, variance_w = 1, initialState = [0,-100,0,-100])
+
+	# 2e) try poor sensorProbability = 0.5, sensor fails so often that sensor coudn't track correctly unless very little change/ no change in position. Errors are magnified when x or y moves, and it takes a lot longer than before until tracking goes back on right track
+	errorRatio = kalmanFilter(sensorProbability = 0.5)
+	errorRatio = kalmanFilter(sensorProbability = 1.0)
+
+
+	plt.show()
+
 
 
 

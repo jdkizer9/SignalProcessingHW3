@@ -213,24 +213,52 @@ def plotGroundTruthAndNoisyMeasureMentData():
 	noisyMeasurement[len(groundTruthData)-1][0] = noisyPositionData[len(groundTruthData)-1][0]
 	noisyMeasurement[len(groundTruthData)-1][2] = noisyPositionData[len(groundTruthData)-1][1]
 
+
+	plt.figure()
+	plt.plot(groundTruthData[:,0], groundTruthData[:,2])
+	# plt.plot(noisyMeasurement[:,0], noisyMeasurement[:,2])
+	plt.xlabel("x position")
+	plt.ylabel("y position")
+	plt.title("Exact Trajectory")
+	plt.axis([0,120000,-10000,80000])
+	plt.savefig("1b_groundTruth_trajectory.png")
+
+
 	plt.figure()
 	plt.plot(groundTruthData[:,0], groundTruthData[:,2])
 	plt.plot(noisyMeasurement[:,0], noisyMeasurement[:,2])
+	plt.xlabel("x position")
+	plt.ylabel("y position")
+	plt.title("Exact Trajectory with Noisy Measurement")
+	plt.savefig("1c_groundTruth_trajectory_with_noisy_measurement.png")
 
 	plt.figure()
 	plt.plot(list(range(len(groundTruthData))), groundTruthData[:,1])
-	plt.plot(list(range(len(groundTruthData))),  noisyMeasurement[:,1])
+	# plt.plot(list(range(len(groundTruthData))),  noisyMeasurement[:,1])
+	plt.xlabel("time (sec)")
+	plt.ylabel("x velocity")
+	plt.title("Velocity along X-axis")
+	# set min max on axis
+	plt.axis([0,500,-100,600])
+	plt.savefig("1d_velocity_along_x.png")
+
 
 	plt.figure()
 	plt.plot(list(range(len(groundTruthData))), groundTruthData[:,3])
-	plt.plot(list(range(len(groundTruthData))),  noisyMeasurement[:,3])
+	# plt.plot(list(range(len(groundTruthData))),  noisyMeasurement[:,3])
+	plt.xlabel("time (sec)")
+	plt.ylabel("y velocity")
+	plt.title("Velocity along Y-axis")
+	# set min max on axis
+	plt.axis([0,500,-100,400])
+	plt.savefig("1d_velocity_along_y.png")
 
 	plt.show()
 
 
 
 if __name__ == "__main__":
-	#plotGroundTruth()
+	# plotGroundTruth()
 	plotGroundTruthAndNoisyMeasureMentData()
 
 
