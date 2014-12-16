@@ -6,12 +6,17 @@ import math, random
 
 
 
-def kalmanFilter(T=1, variance_w=.3, variance_v=1000, epsilon=.00001, initialState=[0., 0., 0., 0.], sensorProbability=1., graph=True):
+def kalmanFilter(T=1, variance_w=.3*.3, variance_v=1000*1000, raw_measurement_variance=1000*1000,epsilon=.00001, initialState=[0., 0., 0., 0.], sensorProbability=1., graph=True):
 
 
-	trueTrajectoryArray, rawMeasurementsArray, trueTrajectoryMatrix, z_T, z_velocity = simulation.generateDataWithMatrices()
+	trueTrajectoryArray, rawMeasurementsArray, trueTrajectoryMatrix, z_T, z_velocity = simulation.generateDataWithMatrices(measurementNoise=([0,0], [[raw_measurement_variance,0],[0,raw_measurement_variance]]))
 
 	z = np.array([m.T for m in z_T])
+
+
+	my_z = np.empty(len(z), dtype=np.dtype(object))
+	#matrix to support prediction
+	D = np.matrix([[1., 1., 0., 0.], [0., 0., 1., 1.]])
 	#A = 4x4
 	#B = 4x2
 	#C = 2x4
@@ -38,11 +43,16 @@ def kalmanFilter(T=1, variance_w=.3, variance_v=1000, epsilon=.00001, initialSta
 	Pminus = np.empty(len(z), dtype=np.dtype(object))
 	P = np.empty(len(z), dtype=np.dtype(object))
 	
-	Q = np.identity(4)*variance_w
+	#Q = np.identity(4)*variance_w
+	Q = B*(np.identity(2)*variance_w)*B.T
+
+	print(B*(np.identity(2)*variance_w)*B.T)
+
 	R = np.identity(2)*variance_v
 
 	accel_variance = .3
-	u = np.array([m.T for m in np.matrix(np.random.multivariate_normal([0,0], np.identity(2)*accel_variance, len(z)))])
+	#u = np.array([m.T for m in np.matrix(np.random.multivariate_normal([0,0], np.identity(2)*accel_variance, len(z)))])
+	u = np.array([np.matrix([0., 0.]).T for i in range(len(z))])
 
 	xhat = np.empty(len(z), dtype=np.dtype(object))
 	xhatminus = np.empty(len(z), dtype=np.dtype(object))
@@ -80,6 +90,7 @@ def kalmanFilter(T=1, variance_w=.3, variance_v=1000, epsilon=.00001, initialSta
 		assert(R.shape == (2,2))
 
 		K[k] = Pminus[k]*C.T * (C*Pminus[k]*C.T + R).getI()
+		#print(K[k])
 
 		assert(K[k].shape == (4,2))
 
@@ -89,15 +100,40 @@ def kalmanFilter(T=1, variance_w=.3, variance_v=1000, epsilon=.00001, initialSta
 		##implement imperfect sensor here
 		if random.random() > sensorProbability and k > 1:
 			# sensor broke, carry forward old data to make projections
-			xhat[k] = xhatminus[k-1] + K[k-1]*(z[k-1]-C*xhatminus[k-1])
+			#xhat[k] = xhatminus[k-1] + K[k-1]*(z[k-1]-C*xhatminus[k-1])
+
+			#create z[k]
+			#predict z[k] based on previous location + previous trajectory + noise
+
+			previousStateVector = np.matrix([my_z[k-1][0,0], xhat[k-1][1,0], my_z[k-1][1,0], xhat[k-1][3,0]]).T
+			assert(previousStateVector.shape == (4,1))
+			assert(D.shape == (2,4))
+			estimatedPosition = (D*previousStateVector).T
+			assert(estimatedPosition.shape == (1,2))
+
+			#print(estimatedPosition)
+			#print(estimatedPosition.getA()[0])
+
+
+			my_z[k] = np.matrix(np.random.multivariate_normal(estimatedPosition.getA()[0], R)).T
+			assert(my_z[k].shape == (2,1))
+
+
+			#xhat[k] = xhatminus[k] + K[k]*(xhatminus[k]-C*xhatminus[k])
 		else:
-			xhat[k] = xhatminus[k] + K[k]*(z[k]-C*xhatminus[k])
+			#xhat[k] = xhatminus[k] + K[k]*(z[k]-C*xhatminus[k])
+			my_z[k] = z[k]
+
+		#print(K[k]*(my_z[k]-C*xhatminus[k]))
+		xhat[k] = xhatminus[k] + K[k]*(my_z[k]-C*xhatminus[k])
 
 		assert(xhat[k].shape == (4,1))
 
 		P[k] = (I-K[k]*C)*Pminus[k]
 
 		assert(P[k].shape == (4,4))
+
+		#print(xhat[k])
 
 	#print(xhat)
 
@@ -192,7 +228,7 @@ def kalmanFilter(T=1, variance_w=.3, variance_v=1000, epsilon=.00001, initialSta
 
 
 if __name__ == "__main__":
-	# errorRatio = kalmanFilter()
+	# errorRatio = kalmanFilter(graph=True)
 	# print(errorRatio)
 
 	# 2b) try some variance_w to see the effects 
