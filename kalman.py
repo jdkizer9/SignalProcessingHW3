@@ -6,7 +6,7 @@ import math, random
 
 
 
-def kalmanFilter(T=1, variance_w=.3*.3, variance_v=1000*1000, raw_measurement_variance=1000*1000,epsilon=.00001, initialState=[0., 0., 0., 0.], sensorProbability=1., graph=True):
+def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*1000, raw_measurement_variance=1000*1000,epsilon=.00001, initialState=[0., 0., 0., 0.], sensorProbability=1., graph=True):
 
 
 	trueTrajectoryArray, rawMeasurementsArray, trueTrajectoryMatrix, z_T, z_velocity = simulation.generateDataWithMatrices(measurementNoise=([0,0], [[raw_measurement_variance,0],[0,raw_measurement_variance]]))
@@ -46,13 +46,13 @@ def kalmanFilter(T=1, variance_w=.3*.3, variance_v=1000*1000, raw_measurement_va
 	#Q = np.identity(4)*variance_w
 	Q = B*(np.identity(2)*variance_w)*B.T
 
-	print(B*(np.identity(2)*variance_w)*B.T)
+	#print(B*(np.identity(2)*variance_w)*B.T)
 
 	R = np.identity(2)*variance_v
 
 	accel_variance = .3
-	#u = np.array([m.T for m in np.matrix(np.random.multivariate_normal([0,0], np.identity(2)*accel_variance, len(z)))])
-	u = np.array([np.matrix([0., 0.]).T for i in range(len(z))])
+	u = np.array([m.T for m in np.matrix(np.random.multivariate_normal([0,0], np.identity(2)*accel_variance, len(z)))])
+	#u = np.array([np.matrix([0., 0.]).T for i in range(len(z))])
 
 	xhat = np.empty(len(z), dtype=np.dtype(object))
 	xhatminus = np.empty(len(z), dtype=np.dtype(object))
@@ -232,7 +232,7 @@ if __name__ == "__main__":
 	# print(errorRatio)
 
 	# 2b) try some variance_w to see the effects 
-	# variance_w_list=[.003, .03, .3, 3, 30, 300]
+	# variance_w_list=[.003, .03, .3, 3, 30, 300, 3000, 30000]
 	# for variance in variance_w_list:
 	# 	errorRatio = kalmanFilter(variance_w=variance, graph=False)
 	# 	print('For variance_w {} the error ratio is {}'.format(variance, errorRatio))
