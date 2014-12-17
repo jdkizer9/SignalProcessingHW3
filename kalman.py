@@ -136,9 +136,9 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 				#print(estimatedPosition.getA()[0])
 
 
-				my_z[k] = np.matrix(np.random.multivariate_normal(estimatedPosition.getA()[0], R)).T
+				#my_z[k] = np.matrix(np.random.multivariate_normal(estimatedPosition.getA()[0], R)).T
 				#my_z[k] = estimatedPosition.T
-				#my_z[k] = my_z[k-1]
+				my_z[k] = my_z[k-1]
 
 			else:
 
@@ -264,8 +264,8 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 
 
 if __name__ == "__main__":
-	errorRatio = kalmanFilter(graph=True, prefix='2b')
-	print(errorRatio)
+	# errorRatio = kalmanFilter(graph=True, prefix='2b')
+	# print(errorRatio)
 
 	# 2b) try some variance_w to see the effects 
 	# variance_w_list=[.003, .03, .3, 3, 30, 300, 3000, 30000]
@@ -285,8 +285,8 @@ if __name__ == "__main__":
 	# 2e) try poor sensorProbability = 0.5, sensor fails so often that sensor coudn't track correctly unless very little change/ no change in position. Errors are magnified when x or y moves, and it takes a lot longer than before until tracking goes back on right track
 	# errorRatio = kalmanFilter(sensorProbability = 0.5)
 	# print(errorRatio)
-	# errorRatio = kalmanFilter(sensorProbability = 1.0)
-	# print(errorRatio)
+	errorRatio = kalmanFilter(sensorProbability = 1.0)
+	print(errorRatio)
 
 
 	plt.show()
