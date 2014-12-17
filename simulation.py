@@ -63,7 +63,7 @@ def generateGroundTruth():
 
 	return groundTruth
 
-def generateDataWithMatrices(T=1., measurementNoise=([0,0], [[1000,0],[0,1000]])):
+def generateDataWithMatrices(T=1., measurementNoise=([0,0], [[1000*1000,0],[0,1000*1000]])):
 
 	##len 501 array of 4x1 Matrices
 
@@ -177,7 +177,7 @@ def plotGroundTruth():
 	# pylab.xlabel('Iteration')
 	# pylab.ylabel('Voltage')
 
-def generateNoisyMeasurementsFromGroundTruthData(groundTruthData, measurementNoise=([0,0], [[1000,0],[0,1000]])):
+def generateNoisyMeasurementsFromGroundTruthData(groundTruthData, measurementNoise=([0,0], [[1000*1000,0],[0,1000*1000]])):
 
 	noisyPositionData = groundTruthData[:,[0,2]] + np.random.multivariate_normal(measurementNoise[0], measurementNoise[1], len(groundTruthData))
 	

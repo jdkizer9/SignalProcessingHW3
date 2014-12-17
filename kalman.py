@@ -242,7 +242,7 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 		plt.plot(list(range(len(trueTrajectoryArray))),  estimationErrorX)
 		plt.plot(list(range(len(trueTrajectoryArray))),  measurementErrorX)
 		plt.xlabel("Time (sec)")
-		plt.ylabel("meters")
+		plt.ylabel("m, m/s")
 		plt.title("Velocity on x (blue) with Estimation (green) and Measurement Error (red) vs. Time (sec)")
 		plt.savefig('{}_velocity_along_x_est_err.png'.format(prefix))
 
@@ -252,7 +252,7 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 		plt.plot(list(range(len(trueTrajectoryArray))),  estimationErrorY)
 		plt.plot(list(range(len(trueTrajectoryArray))),  measurementErrorY)
 		plt.xlabel("Time (sec)")
-		plt.ylabel("meters")
+		plt.ylabel("m, m/2")
 		plt.title("Velocity on y (blue) with Estimation (green) and Measurement Error (red) vs. Time (sec)")
 		plt.savefig('{}_velocity_along_y_est_err.png'.format(prefix))
 
@@ -264,32 +264,32 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 
 
 if __name__ == "__main__":
-	errorRatio = kalmanFilter(graph=True, prefix='2b')
-	print(errorRatio)
+  # # 2a) plots
+  errorRatio = kalmanFilter(graph=True, prefix='2a', variance_w=.3*.3)
+  print(errorRatio)
 
-	# 2b) try some variance_w to see the effects 
-	# variance_w_list=[.003, .03, .3, 3, 30, 300, 3000, 30000]
-	# for variance in variance_w_list:
-	# 	errorRatio = kalmanFilter(variance_w=variance, graph=False)
-	# 	print('For variance_w {} the error ratio is {}'.format(variance, errorRatio))
+  #2b)
+  # errorRatio = kalmanFilter(graph=True, prefix='2b', variance_w=.3*.3)
+  # print(errorRatio)
 
-	# errorRatio = kalmanFilter(variance_w=3000)
+  # 2c) try a very small variance_v
+  # errorRatio = kalmanFilter(graph=True, prefix='2c',variance_v = 1000)
+  # print(errorRatio)
 
-	# 2c) try a very small variance_v
-	# this made the model to assume a smaller variance_v 
-	# errorRatio = kalmanFilter(variance_v = 1)
+  # 2d) try variance_v = 1, variance_w = 1, initialState = [0, -100, 0, -100]
+  # errorRatio = kalmanFilter(graph=True, prefix='2d',initialState = [0,-100,0,-100] )
+  # print(errorRatio)
+  # errorRatio = kalmanFilter(graph=True, prefix='2d_identity_covariance',variance_v = 1, variance_w = 1,initialState = [0,-100,0,-100] )
+  # print(errorRatio)
 
-	# 2d) try variance_v = 1, variance_w = 1, initialState = [0, -100, 0, -100]
-	# errorRatio = kalmanFilter(variance_v = 1, variance_w = 1, initialState = [0,-100,0,-100])
+  #2e) tune 2d) via  until it looks good
+  # errorRatio = kalmanFilter(graph=True, prefix='2e',variance_v = 1000*1000, variance_w = 3*3,initialState = [0,-100,0,-100] )
+  # print(errorRatio)
 
-	# 2e) try poor sensorProbability = 0.5, sensor fails so often that sensor coudn't track correctly unless very little change/ no change in position. Errors are magnified when x or y moves, and it takes a lot longer than before until tracking goes back on right track
-	# errorRatio = kalmanFilter(sensorProbability = 0.5)
-	# print(errorRatio)
-	# errorRatio = kalmanFilter(sensorProbability = 1.0)
-	# print(errorRatio)
+  plt.show()
 
 
-	plt.show()
+
 
 
 
