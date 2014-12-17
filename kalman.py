@@ -6,7 +6,7 @@ import math, random
 
 
 
-def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*1000, raw_measurement_variance=1000*1000,epsilon=.00001, initialState=[0., 0., 0., 0.], sensorProbability=1., graph=True):
+def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*1000, raw_measurement_variance=1000*1000,epsilon=.00001, initialState=[0., 0., 0., 0.], sensorProbability=1., graph=True, prefix='2a'):
 
 
 	trueTrajectoryArray, rawMeasurementsArray, trueTrajectoryMatrix, z_T, z_velocity = simulation.generateDataWithMatrices(measurementNoise=([0,0], [[raw_measurement_variance,0],[0,raw_measurement_variance]]))
@@ -55,7 +55,7 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 	R = np.identity(2)*variance_v
 
 	w = np.array([m.T for m in np.matrix(np.random.multivariate_normal([0,0], np.identity(2)*accel_variance, len(z)))])
-	#u = np.array([np.matrix([0., 0.]).T for i in range(len(z))])
+	#w = np.array([np.matrix([0., 0.]).T for i in range(len(z))])
 
 	xhat = np.empty(len(z), dtype=np.dtype(object))
 	xhatminus = np.empty(len(z), dtype=np.dtype(object))
@@ -224,8 +224,8 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 		plt.xlabel("x position")
 		plt.ylabel("y position")
 		plt.title("Estimated Trajectory (red), Raw Measurements (green), True Trajectory (blue) on xy-plane")
-		plt.savefig("2a_Estimated_Raw_True_Trajectories.png")
-
+		#plt.savefig("2a_Estimated_Raw_True_Trajectories.png")
+		plt.savefig('{}_Estimated_Raw_True_Trajectories.png'.format(prefix))
 
 		plt.figure()
 		plt.plot(list(range(len(estimationError))), np.zeros(len(estimationError)))
@@ -234,7 +234,7 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 		plt.xlabel("Time (sec)")
 		plt.ylabel("Euclidean Distance / Error (m)")
 		plt.title("Estimation (green) and Measurement error (red) vs. Time (sec)")
-		plt.savefig("2a_Estimation_Measurement_error.png")
+		plt.savefig('{}_Estimation_Measurement_error.png'.format(prefix))
 
 
 		plt.figure()
@@ -244,7 +244,7 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 		plt.xlabel("Time (sec)")
 		plt.ylabel("meters")
 		plt.title("Velocity on x (blue) with Estimation (green) and Measurement Error (red) vs. Time (sec)")
-		plt.savefig("2a_velocity_along_x_est_err.png")
+		plt.savefig('{}_velocity_along_x_est_err.png'.format(prefix))
 
 
 		plt.figure()
@@ -254,7 +254,7 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 		plt.xlabel("Time (sec)")
 		plt.ylabel("meters")
 		plt.title("Velocity on y (blue) with Estimation (green) and Measurement Error (red) vs. Time (sec)")
-		plt.savefig("2a_velocity_along_y_est_err.png")
+		plt.savefig('{}_velocity_along_y_est_err.png'.format(prefix))
 
 		# plt.show()
 
@@ -264,8 +264,8 @@ def kalmanFilter(T=1, variance_w=.3*.3, accel_variance=.3*.3, variance_v=1000*10
 
 
 if __name__ == "__main__":
-	# errorRatio = kalmanFilter(graph=True)
-	# print(errorRatio)
+	errorRatio = kalmanFilter(graph=True, prefix='2b')
+	print(errorRatio)
 
 	# 2b) try some variance_w to see the effects 
 	# variance_w_list=[.003, .03, .3, 3, 30, 300, 3000, 30000]
@@ -283,14 +283,10 @@ if __name__ == "__main__":
 	# errorRatio = kalmanFilter(variance_v = 1, variance_w = 1, initialState = [0,-100,0,-100])
 
 	# 2e) try poor sensorProbability = 0.5, sensor fails so often that sensor coudn't track correctly unless very little change/ no change in position. Errors are magnified when x or y moves, and it takes a lot longer than before until tracking goes back on right track
-	# errorRatio = kalmanFilter(sensorProbability = 0.25)
+	# errorRatio = kalmanFilter(sensorProbability = 0.5)
 	# print(errorRatio)
-
-	errorRatio = 0
-	for i in range(100):
-		errorRatio += kalmanFilter(sensorProbability = 0.25, graph=False)
-	print(errorRatio/100.)
-	#errorRatio = kalmanFilter(sensorProbability = 1.0)
+	# errorRatio = kalmanFilter(sensorProbability = 1.0)
+	# print(errorRatio)
 
 
 	plt.show()
